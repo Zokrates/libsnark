@@ -90,7 +90,8 @@ std::istream& operator>>(std::istream &in, r1cs_gg_ppzksnark_zok_proving_key<ppT
 template<typename ppT>
 bool r1cs_gg_ppzksnark_zok_verification_key<ppT>::operator==(const r1cs_gg_ppzksnark_zok_verification_key<ppT> &other) const
 {
-    return (this->alpha_g1_beta_g2 == other.alpha_g1_beta_g2 &&
+    return (this->alpha_g1 == other.alpha_g1 &&
+            this->beta_g2 == other.beta_g2 &&
             this->gamma_g2 == other.gamma_g2 &&
             this->delta_g2 == other.delta_g2 &&
             this->gamma_ABC_g1 == other.gamma_ABC_g1);
@@ -99,7 +100,8 @@ bool r1cs_gg_ppzksnark_zok_verification_key<ppT>::operator==(const r1cs_gg_ppzks
 template<typename ppT>
 std::ostream& operator<<(std::ostream &out, const r1cs_gg_ppzksnark_zok_verification_key<ppT> &vk)
 {
-    out << vk.alpha_g1_beta_g2 << OUTPUT_NEWLINE;
+    out << vk.alpha_g1 << OUTPUT_NEWLINE;
+    out << vk.beta_g2 << OUTPUT_NEWLINE;
     out << vk.gamma_g2 << OUTPUT_NEWLINE;
     out << vk.delta_g2 << OUTPUT_NEWLINE;
     out << vk.gamma_ABC_g1 << OUTPUT_NEWLINE;
@@ -110,7 +112,9 @@ std::ostream& operator<<(std::ostream &out, const r1cs_gg_ppzksnark_zok_verifica
 template<typename ppT>
 std::istream& operator>>(std::istream &in, r1cs_gg_ppzksnark_zok_verification_key<ppT> &vk)
 {
-    in >> vk.alpha_g1_beta_g2;
+    in >> vk.alpha_g1;
+    libff::consume_OUTPUT_NEWLINE(in);
+    in >> vk.beta_g2;
     libff::consume_OUTPUT_NEWLINE(in);
     in >> vk.gamma_g2;
     libff::consume_OUTPUT_NEWLINE(in);
@@ -125,7 +129,8 @@ std::istream& operator>>(std::istream &in, r1cs_gg_ppzksnark_zok_verification_ke
 template<typename ppT>
 bool r1cs_gg_ppzksnark_zok_processed_verification_key<ppT>::operator==(const r1cs_gg_ppzksnark_zok_processed_verification_key<ppT> &other) const
 {
-    return (this->vk_alpha_g1_beta_g2 == other.vk_alpha_g1_beta_g2 &&
+    return (this->vk_alpha_g1 == other.vk_alpha_g1 &&
+            this->vk_beta_g2 == other.vk_beta_g2 &&
             this->vk_gamma_g2_precomp == other.vk_gamma_g2_precomp &&
             this->vk_delta_g2_precomp == other.vk_delta_g2_precomp &&
             this->gamma_ABC_g1 == other.gamma_ABC_g1);
@@ -134,7 +139,8 @@ bool r1cs_gg_ppzksnark_zok_processed_verification_key<ppT>::operator==(const r1c
 template<typename ppT>
 std::ostream& operator<<(std::ostream &out, const r1cs_gg_ppzksnark_zok_processed_verification_key<ppT> &pvk)
 {
-    out << pvk.vk_alpha_g1_beta_g2 << OUTPUT_NEWLINE;
+    out << pvk.vk_alpha_g1 << OUTPUT_NEWLINE;
+    out << pvk.vk_beta_g2 << OUTPUT_NEWLINE;
     out << pvk.vk_gamma_g2_precomp << OUTPUT_NEWLINE;
     out << pvk.vk_delta_g2_precomp << OUTPUT_NEWLINE;
     out << pvk.gamma_ABC_g1 << OUTPUT_NEWLINE;
@@ -145,7 +151,9 @@ std::ostream& operator<<(std::ostream &out, const r1cs_gg_ppzksnark_zok_processe
 template<typename ppT>
 std::istream& operator>>(std::istream &in, r1cs_gg_ppzksnark_zok_processed_verification_key<ppT> &pvk)
 {
-    in >> pvk.vk_alpha_g1_beta_g2;
+    in >> pvk.vk_alpha_g1;
+    libff::consume_OUTPUT_NEWLINE(in);
+    in >> pvk.vk_beta_g2;
     libff::consume_OUTPUT_NEWLINE(in);
     in >> pvk.vk_gamma_g2_precomp;
     libff::consume_OUTPUT_NEWLINE(in);
@@ -192,7 +200,8 @@ template<typename ppT>
 r1cs_gg_ppzksnark_zok_verification_key<ppT> r1cs_gg_ppzksnark_zok_verification_key<ppT>::dummy_verification_key(const size_t input_size)
 {
     r1cs_gg_ppzksnark_zok_verification_key<ppT> result;
-    result.alpha_g1_beta_g2 = libff::Fr<ppT>::random_element() * libff::GT<ppT>::random_element();
+    result.alpha_g1 = libff::G1<ppT>::random_element();
+    result.beta_g2 = libff::G2<ppT>::random_element();
     result.gamma_g2 = libff::G2<ppT>::random_element();
     result.delta_g2 = libff::G2<ppT>::random_element();
 
@@ -352,7 +361,6 @@ r1cs_gg_ppzksnark_zok_keypair<ppT> r1cs_gg_ppzksnark_zok_generator(const r1cs_gg
     libff::leave_block("Generate R1CS proving key");
 
     libff::enter_block("Generate R1CS verification key");
-    libff::GT<ppT> alpha_g1_beta_g2 = ppT::reduced_pairing(alpha_g1, beta_g2);
     libff::G2<ppT> gamma_g2 = gamma * G2_gen;
 
     libff::enter_block("Encode gamma_ABC for R1CS verification key");
@@ -365,7 +373,8 @@ r1cs_gg_ppzksnark_zok_keypair<ppT> r1cs_gg_ppzksnark_zok_generator(const r1cs_gg
 
     accumulation_vector<libff::G1<ppT> > gamma_ABC_g1(std::move(gamma_ABC_g1_0), std::move(gamma_ABC_g1_values));
 
-    r1cs_gg_ppzksnark_zok_verification_key<ppT> vk = r1cs_gg_ppzksnark_zok_verification_key<ppT>(alpha_g1_beta_g2,
+    r1cs_gg_ppzksnark_zok_verification_key<ppT> vk = r1cs_gg_ppzksnark_zok_verification_key<ppT>(alpha_g1,
+                                                                                         beta_g2,
                                                                                          gamma_g2,
                                                                                          delta_g2,
                                                                                          gamma_ABC_g1);
@@ -510,7 +519,8 @@ r1cs_gg_ppzksnark_zok_processed_verification_key<ppT> r1cs_gg_ppzksnark_zok_veri
     libff::enter_block("Call to r1cs_gg_ppzksnark_zok_verifier_process_vk");
 
     r1cs_gg_ppzksnark_zok_processed_verification_key<ppT> pvk;
-    pvk.vk_alpha_g1_beta_g2 = vk.alpha_g1_beta_g2;
+    pvk.vk_alpha_g1 = vk.alpha_g1;
+    pvk.vk_beta_g2 = vk.beta_g2;
     pvk.vk_gamma_g2_precomp = ppT::precompute_G2(vk.gamma_g2);
     pvk.vk_delta_g2_precomp = ppT::precompute_G2(vk.delta_g2);
     pvk.gamma_ABC_g1 = vk.gamma_ABC_g1;
@@ -559,7 +569,9 @@ bool r1cs_gg_ppzksnark_zok_online_verifier_weak_IC(const r1cs_gg_ppzksnark_zok_p
         proof_g_C_precomp, pvk.vk_delta_g2_precomp);
     const libff::GT<ppT> QAP = ppT::final_exponentiation(QAP1 * QAP2.unitary_inverse());
 
-    if (QAP != pvk.vk_alpha_g1_beta_g2)
+    libff::GT<ppT> vk_alpha_g1_beta_g2 = ppT::reduced_pairing(pvk.vk_alpha_g1, pvk.vk_beta_g2);
+
+    if (QAP != vk_alpha_g1_beta_g2)
     {
         if (!libff::inhibit_profiling_info)
         {
@@ -662,7 +674,9 @@ bool r1cs_gg_ppzksnark_zok_affine_verifier_weak_IC(const r1cs_gg_ppzksnark_zok_v
         proof_g_A_precomp,  proof_g_B_precomp);
     const libff::GT<ppT> QAP = ppT::final_exponentiation(QAP_miller.unitary_inverse());
 
-    if (QAP != vk.alpha_g1_beta_g2)
+    libff::GT<ppT> vk_alpha_g1_beta_g2 = ppT::reduced_pairing(pvk.vk_alpha_g1, pvk.vk_beta_g2);
+
+    if (QAP != vk_alpha_g1_beta_g2)
     {
         if (!libff::inhibit_profiling_info)
         {
