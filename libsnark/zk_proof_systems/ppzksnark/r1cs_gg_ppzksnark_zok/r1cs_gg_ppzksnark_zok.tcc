@@ -674,7 +674,7 @@ bool r1cs_gg_ppzksnark_zok_affine_verifier_weak_IC(const r1cs_gg_ppzksnark_zok_v
         proof_g_A_precomp,  proof_g_B_precomp);
     const libff::GT<ppT> QAP = ppT::final_exponentiation(QAP_miller.unitary_inverse());
 
-    libff::GT<ppT> vk_alpha_g1_beta_g2 = ppT::reduced_pairing(pvk.vk_alpha_g1, pvk.vk_beta_g2);
+    libff::GT<ppT> vk_alpha_g1_beta_g2 = ppT::reduced_pairing(vk.alpha_g1, vk.beta_g2);
 
     if (QAP != vk_alpha_g1_beta_g2)
     {
