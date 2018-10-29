@@ -286,6 +286,17 @@ target_link_libraries(
   snark
 )
 
+add_executable(profile_r1cs_gg_ppzksnark_zok
+  EXCLUDE_FROM_ALL
+
+  zk_proof_systems/ppzksnark/r1cs_gg_ppzksnark_zok/profiling/profile_r1cs_gg_ppzksnark_zok.cpp
+)
+target_link_libraries(
+  profile_r1cs_gg_ppzksnark_zok
+
+  snark
+)
+
 add_executable(
   profile_ram_ppzksnark
   EXCLUDE_FROM_ALL
@@ -576,6 +587,18 @@ add_executable(
 )
 target_link_libraries(
   zk_proof_systems_r1cs_gg_ppzksnark_test
+
+  snark
+)
+
+add_executable(
+  zk_proof_systems_r1cs_gg_ppzksnark_zok_test
+  EXCLUDE_FROM_ALL
+
+  zk_proof_systems/ppzksnark/r1cs_gg_ppzksnark_zok/tests/test_r1cs_gg_ppzksnark_zok.cpp
+)
+target_link_libraries(
+  zk_proof_systems_r1cs_gg_ppzksnark_zok_test
 
   snark
 )
