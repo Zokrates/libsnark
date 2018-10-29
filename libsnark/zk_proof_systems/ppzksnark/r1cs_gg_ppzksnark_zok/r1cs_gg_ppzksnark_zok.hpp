@@ -245,7 +245,8 @@ std::istream& operator>>(std::istream &in, r1cs_gg_ppzksnark_zok_processed_verif
 template<typename ppT>
 class r1cs_gg_ppzksnark_zok_processed_verification_key {
 public:
-    libff::GT<ppT> vk_alpha_g1;
+    libff::G1<ppT> vk_alpha_g1;
+    libff::G2<ppT> vk_beta_g2;
     libff::G2_precomp<ppT> vk_gamma_g2_precomp;
     libff::G2_precomp<ppT> vk_delta_g2_precomp;
 
